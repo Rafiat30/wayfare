@@ -400,7 +400,8 @@ client that conflated them would misattribute the loss to the wrong rail.
 Every quote in a response is `"dex"` today — live pathfinding is the only
 thing this project prices — but the field is on the wire from the start so a
 caller never has to guess which rail a figure came from once anchor pricing
-lands (see [#106](https://github.com/Wayfare-labs/wayfare/issues/180)).
+lands (a live SEP-38 round-trip has never been performed — see
+[#180](https://github.com/Wayfare-labs/wayfare/issues/180)).
 
 **The trend endpoint** answers "is this getting worse?" from the stored runs:
 every run comes back oldest first, each carrying its integrity state, its
