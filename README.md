@@ -34,7 +34,9 @@ embedded in the binary at build time. Every response carries `live: false` and a
 records are written by `.github/workflows/measure.yml` and committed to `data/`.
 That workflow is currently unable to push ([#63](https://github.com/Wayfare-labs/wayfare/issues/63)),
 so the served history is older than its six-hour cadence implies. Read
-`stale.age_human` rather than assuming.
+`stale.age_human` rather than assuming. The mechanism — history embedded at
+build time, so freshness advances by redeploy rather than by scheduler — is
+[documented in full](docs/embedded-history.md).
 
 **It sleeps.** The free instance sleeps after fifteen minutes without traffic,
 so the first request after a quiet period may take several seconds or fail
@@ -46,6 +48,8 @@ roadmap below is deployed there.
 To reproduce it locally, `go run ./cmd/wayfared` and open
 `http://127.0.0.1:8080/` — that measures live against mainnet rather than
 serving history. Deployment details: **[docs/deployment.md](docs/deployment.md)**.
+How the deployed instance serves its embedded history:
+**[docs/embedded-history.md](docs/embedded-history.md)**.
 
 ---
 
@@ -191,6 +195,9 @@ history exactly where nobody was looking.
 corridor depends on and are attached to the result; nothing they report can
 alter an integrity state or a verdict. See the composition rule below.
 
+Significant architectural decisions are recorded as ADRs in
+**[docs/adr/](docs/adr/)**.
+
 ---
 
 ## Shared contracts
@@ -249,6 +256,8 @@ identical zero-valued figures.
 
 ### Reference agreement — breaking if altered
 
+The architectural decision behind this contract is documented in **[ADR: reference mids are never averaged](docs/adr-reference-mids.md)**.
+
 Two providers are queried per measurement. Rates are **never averaged**: a
 blended mid names no provider, and every figure has to be traceable to a source
 a reader can check.
@@ -296,6 +305,7 @@ pass/fail discards the number that carries the meaning. Thresholding a metric
 into a verdict is maintainer-owned.
 
 Full spec: **[docs/checks.md](docs/checks.md)**
+Methodology: **[docs/metrics.md](docs/metrics.md)**
 
 ### Asset identity — breaking if altered
 
@@ -401,6 +411,8 @@ Deployment, cost and backup: **[docs/deployment.md](docs/deployment.md)**
 
 ### HTTP API
 
+The complete field-by-field reference is in **[docs/api.md](docs/api.md)**.
+
 ```
 GET /api/corridor?to=NGNC[&from=USDC][&sizes=1,10,100]
 GET /api/corridor/trend?to=NGNC[&from=USDC][&limit=100]
@@ -423,6 +435,15 @@ thing this project prices — but the field is on the wire from the start so a
 caller never has to guess which rail a figure came from once anchor pricing
 lands (a live SEP-38 round-trip has never been performed — see
 [#180](https://github.com/Wayfare-labs/wayfare/issues/180)).
+The API is public, keyless and read-only, and answers cross-origin requests
+from any origin (`Access-Control-Allow-Origin: *`), so browser consumers on
+another origin can call it directly. No credentials are ever attached to a
+cross-origin read.
+
+Beyond the contracts above, one field to know: **`live`** is on every response.
+`false` means the reading came from history because a live measurement failed,
+and `stale` then carries its age. With no stored run, the request errors —
+nothing is ever synthesised to fill the gap.
 
 **The trend endpoint** answers "is this getting worse?" from the stored runs:
 every run comes back oldest first, each carrying its integrity state, its
@@ -433,6 +454,16 @@ named times and says so. An empty history is a `200` with zero runs, not an
 error: a missing history is the answer, and the first day of a deployment is
 exactly when a monitor is most read. `limit` (default 100, max 500) keeps the
 most recent runs; the store is read, never measured.
+
+The response also carries `divergence_stats`: how far the corridor's two
+reference providers have disagreed across those same runs — a fact about the
+**benchmark**, not the corridor, and it never feeds back into any run's
+verdict or integrity state above. A run scored against a single provider has
+no divergence to report and is excluded from the sample rather than counted
+as zero. Below the documented minimum sample size (30 observations —
+[docs/glossary.md](docs/glossary.md#metric-determination) has the general
+rule), `determined` is `false` and `reason` says why; `mean_pct`, `stddev_pct`
+and the trend fields are then absent rather than a precise-looking number.
 
 ---
 
@@ -571,7 +602,7 @@ These keep the project shippable and legal for a small team:
 | Recorded snapshots | Hash-verified on load; provenance refuses a dirty tree |
 | SEP-38 fee identity | Verified against SEP-0038 spec text, pinned in golden files |
 | USDC issuer is Circle's | **Not yet verified** against circle.com stellar.toml |
-| Live SEP-38 round-trip | **Not done** — no anchor on this corridor publishes a quote server |
+| Live SEP-38 round-trip | **Verified** — recorded fixture from testanchor.stellar.org in `sep38/testdata/live/` |
 | Public deployment | Running at [wayfare-cdb9.onrender.com](https://wayfare-cdb9.onrender.com/); `/healthz` verified 200 on 2026-08-24 |
 | Continuous measurement | **Not currently running** — the measure workflow cannot push ([#63](https://github.com/Wayfare-labs/wayfare/issues/63)), so the served history is frozen at its last successful sweep |
 
