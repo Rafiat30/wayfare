@@ -40,7 +40,9 @@ build time, so freshness advances by redeploy rather than by scheduler — is
 
 **It sleeps.** The free instance sleeps after fifteen minutes without traffic,
 so the first request after a quiet period may take several seconds or fail
-outright before the instance wakes. Retry once.
+outright before the instance wakes. Retry once. The checked observation and
+the boundary between manual retry and built behavior are recorded in
+**[docs/cold-start-reliability.md](docs/cold-start-reliability.md)**.
 
 It runs the current system, and only the current system. Nothing in the v2–v6
 roadmap below is deployed there.
@@ -422,15 +424,11 @@ Deployment, cost and backup: **[docs/deployment.md](docs/deployment.md)**
 
 ### HTTP API
 
-The complete field-by-field reference is in **[docs/api.md](docs/api.md)**.
-
-```
-GET /api/corridor?to=NGNC[&from=USDC][&sizes=1,10,100]
-GET /api/corridor/trend?to=NGNC[&from=USDC][&limit=100]
-GET /api/assets
-GET /healthz
-GET /                            single-file UI, no build step
-```
+- [GET /healthz](docs/api.md#get-healthz)
+- [GET /api/assets](docs/api.md#get-api-assets)
+- [GET /api/corridor](docs/api.md#get-apicorridor)
+- [GET /api/corridor/trend](docs/api.md#get-apicorridortrend)
+- `GET /` single-file UI, no build step
 
 Beyond the contracts above, two fields to know. **`live`** is on every
 response: `false` means the reading came from history because a live
