@@ -153,11 +153,13 @@
   h1 { font-size: var(--text-xl); margin: 0 0 var(--space-1); letter-spacing: -0.02em; }
   .sub { color: var(--muted); font-size: var(--text-md); margin: 0; }
   .controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6); }
-  select, button {
+  select, button, input {
     font: inherit; padding: var(--space-3) var(--space-3); border-radius: var(--radius-sm);
     border: 1px solid var(--border); background: var(--panel); color: var(--ink);
     transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
   }
+  input { width: 16rem; max-width: 100%; }
+  @media (max-width: 640px) { input { width: 100%; } }
   button { cursor: pointer; font-weight: 600; }
 
   /* Interactive state contract (issue #285) -------------------------------
@@ -189,14 +191,14 @@
      UNDETERMINED metric state keep their own palette and are never
      referenced from these rules. */
   @media (hover: hover) {
-    button:hover:not(:disabled), select:hover:not(:disabled) {
+    button:hover:not(:disabled), select:hover:not(:disabled), input:hover:not(:disabled) {
       border-color: var(--accent); background: var(--panel-alt);
     }
   }
   button:active:not(:disabled) {
     background: var(--panel-alt); box-shadow: var(--press-shadow);
   }
-  button:focus-visible, select:focus-visible {
+  button:focus-visible, select:focus-visible, input:focus-visible {
     outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus-ring);
   }
   /* The reload link inside an error banner is the only inline anchor; it
@@ -205,13 +207,13 @@
   a:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-xs);
   }
-  button:disabled, select:disabled {
+  button:disabled, select:disabled, input:disabled {
     opacity: .55; cursor: default; color: var(--muted);
   }
   /* Disabled is the end of the interaction story: explicitly cancel any
      hover carry-over so a pointer resting on a disabled control shows rest
      styling. Sits after the hover rule so equal specificity resolves here. */
-  button:disabled:hover, select:disabled:hover {
+  button:disabled:hover, select:disabled:hover, input:disabled:hover {
     border-color: var(--border); background: var(--panel); box-shadow: none;
   }
 
@@ -437,6 +439,13 @@
       <option value="" disabled selected>Loading corridors…</option>
     </select>
     <span id="cs-detail" class="cs-info"></span>
+    <label for="sizes">Send sizes (USDC, comma-separated)</label>
+    <input id="sizes" name="sizes" inputmode="decimal" autocomplete="off"
+      placeholder="Default: 0.1 to 5000"
+      aria-describedby="sizes-help" spellcheck="false">
+    <span id="sizes-help" class="cs-info" title="The engine sorts the chosen sizes ascending before pricing, and an unpriced size is reported as such — never as a zero.">Leave empty for the default ladder:
+    0.1, 1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500 and 5000. Why these sizes:
+    the bottom rung isolates the corridor's spread, the top rung exposes exhaustion.</span>
     <button id="run">Measure live</button>
     <button id="trend">Show trend</button>
     <span id="status" class="sub"></span>
@@ -705,6 +714,44 @@ function showErrorBanner(message) {
     `<div class="panel err" role="alert">${message}</div>`);
 }
 
+// The sizes control lets the reader choose the send amounts a live ladder
+// prices (issue #291). The engine owns the semantics: parseSizes on the
+// server accepts at most 24 positive decimal amounts, sorts them ascending,
+// and falls back to DefaultSizes when the parameter is absent — the control
+// only decides which of those requests to send. Whatever the API answers
+// with is what is rendered: rungs the engine could not price stay unpriced,
+// and nothing here fabricates or reorders a figure (docs/ladder-sizes.md
+// documents the default set).
+const MAX_SIZES = 24;
+
+// readSizes returns the trimmed input, or '' when it is empty. Validation is
+// deliberately server-side only: parseSizes is the contract, and the UI
+// showing the API's own error beats a second validator drifting from it.
+function readSizes() {
+  return $('sizes').value.trim();
+}
+
+// sizesValidation reports why the current input cannot be sent, or '' when it
+// can. Colour alone never carries this (the message text is the signal); the
+// invalid state is also mirrored onto the input via aria-invalid so screen
+// readers get it without a repaint.
+function sizesValidation(raw) {
+  if (raw === '') return '';
+  const parts = raw.split(',');
+  if (parts.length > MAX_SIZES)
+    return `At most ${MAX_SIZES} sizes can be measured in one request.`;
+  for (const p of parts) {
+    const t = p.trim();
+    if (t === '') continue;
+    if (!/^[+]?\d*\.?\d+([eE][+-]?\d+)?$/.test(t))
+      return `“${t}” is not a number the engine can measure.`;
+    const n = parseFloat(t);
+    if (!isFinite(n) || n <= 0)
+      return 'Every size must be a positive amount.';
+  }
+  return '';
+}
+
 // --- Measurement -------------------------------------------------------------
 
 async function measure() {
@@ -719,10 +766,22 @@ async function measure() {
       })}</div>`;
     return;
   }
+  const sizesRaw = readSizes();
+  const problem = sizesValidation(sizesRaw);
+  const sizesInput = $('sizes');
+  if (problem) {
+    sizesInput.setAttribute('aria-invalid', 'true');
+    $('status').textContent = problem;
+    return;
+  }
+  sizesInput.removeAttribute('aria-invalid');
+  lastRequestedSizes = sizesRaw;
   $('run').disabled = true;
-  $('status').textContent = 'measuring live — a full ladder is a dozen round trips…';
+  $('status').textContent = 'measuring live — each size is its own round trip to Horizon, so more sizes take longer…';
   try {
-    const r = await fetch(`/api/corridor?to=${encodeURIComponent(to)}&live=1`);
+    const q = new URLSearchParams({ to });
+    if (sizesRaw !== '') q.set('sizes', sizesRaw);
+    const r = await fetch(`/api/corridor?${q}&live=1`);
     const data = await r.json();
     if (!r.ok) throw Object.assign(new Error(data.error || `HTTP ${r.status}`), { code: data.code });
     render(data);
@@ -748,6 +807,11 @@ function errorPanel(prefix, e) {
   return `<div class="panel err">${esc(prefix)}: ${esc(e.message)}</div>`;
 }
 
+// The sizes the last live measurement asked for, '' when it used the default
+// ladder. Purely a display label: the rendered figures are always the rungs
+// the API actually returned, whatever was requested.
+let lastRequestedSizes = '';
+
 function render(d) {
   const parts = [];
   const provenance = d.live
@@ -769,7 +833,14 @@ function render(d) {
 
   const priced = d.rungs.filter(r => r.priced);
   if (d.scored && priced.length) {
-    parts.push(`<div class="panel"><h2>Loss against mid, by size</h2>${curve(priced)}</div>`);
+    // The heading names the ladder that was actually measured: the sizes
+    // requested when the reader chose them, the default set otherwise
+    // (dex.DefaultSizes — 0.1 through 5000, documented in
+    // docs/ladder-sizes.md). The rungs below are the API's own.
+    const ladderNote = lastRequestedSizes
+      ? `at the sizes you asked for: ${esc(lastRequestedSizes)}`
+      : 'at the default sizes (0.1 to 5000)';
+    parts.push(`<div class="panel"><h2>Loss against mid, by size</h2><p class="meta">Measured ${esc(ladderNote)}.</p>${curve(priced)}</div>`);
   }
 
   parts.push(`<div class="panel"><h2>Measurements</h2><div class="scroll">${table(d.rungs, d.scored, d.depends_on || [])}</div></div>`);

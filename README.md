@@ -227,6 +227,10 @@ New to the project and want the one-page story — what it measures, what it
 refuses to do, who it is for, and the non-custodial position stated once?
 **[docs/about.md](docs/about.md)**
 
+Completely new to the ideas, and want the prose version — what a reference
+rate is, why one corridor is priced at twelve sizes, and what a verdict is
+allowed to claim? **[docs/how-wayfare-works.md](docs/how-wayfare-works.md)**
+
 Why the monitor is Stellar-native, grounded in what the code uses (assets,
 pathfinding, order books, anchors, SEP-1, SEP-38) without unsupported exclusivity claims:
 **[docs/why-stellar-native.md](docs/why-stellar-native.md)**
