@@ -174,6 +174,9 @@ yet. **[ADR 003](docs/adr/003-why-layers-3-and-4-have-no-packages.md)**
 
 The bounded-history research finding asks what the planned 90-day sample could
 and could not support: **[docs/spike-90-day-history.md](docs/spike-90-day-history.md)**.
+The value finding asks whether a layer-3 model would add anything over the
+deterministic measurements, and answers no on the evidence the repository has:
+**[docs/spike-model-vs-deterministic.md](docs/spike-model-vs-deterministic.md)**.
 
 ### How the pieces fit
 
