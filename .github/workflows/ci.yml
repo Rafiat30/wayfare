@@ -13,6 +13,18 @@ on:
   merge_group:
     branches: [main]
 
+# A new push to a pull request makes the run of the previous head obsolete:
+# both runs answer for a commit that is no longer the one under review, and
+# the slower one would decide what the required checks report. A shared group
+# lets the newer push cancel the older run instead of racing it (#574).
+#
+# The group is the pull request number for pull request events — every run of
+# one PR shares it — and the ref for pushes to main and merge-queue entries,
+# so runs on different branches never cancel each other.
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
