@@ -17,6 +17,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math/rand"
 	"time"
 
 	"github.com/Wayfare-labs/wayfare/asset"
@@ -74,6 +75,9 @@ func DefaultCorridors() []Corridor {
 // inside both rate providers' free tiers once refrate.Cached is in the stack.
 const DefaultInterval = 6 * time.Hour
 
+// DefaultJitter is the maximum random delay added to each scheduled interval.
+const DefaultJitter = 5 * time.Minute
+
 // Scheduler measures corridors on an interval and records the results.
 type Scheduler struct {
 	Engine    *route.Engine
@@ -97,6 +101,13 @@ type Scheduler struct {
 	// Interval is the gap between sweeps. Zero means DefaultInterval.
 	Interval time.Duration
 
+	// Jitter is the maximum random delay added to Interval. Zero disables it.
+	Jitter time.Duration
+
+	// JitterSeed makes the interval sequence reproducible when set. Nil uses
+	// a time-based seed.
+	JitterSeed *int64
+
 	// Logger is where run outcomes go. Nil means slog.Default.
 	Logger *slog.Logger
 
@@ -116,6 +127,21 @@ func (s *Scheduler) interval() time.Duration {
 		return s.Interval
 	}
 	return DefaultInterval
+}
+
+func (s *Scheduler) nextInterval(rng *rand.Rand) time.Duration {
+	if s.Jitter <= 0 {
+		return s.interval()
+	}
+	return s.interval() + time.Duration(rng.Int63n(int64(s.Jitter)))
+}
+
+func (s *Scheduler) randomSource() *rand.Rand {
+	seed := time.Now().UnixNano()
+	if s.JitterSeed != nil {
+		seed = *s.JitterSeed
+	}
+	return rand.New(rand.NewSource(seed))
 }
 
 func (s *Scheduler) corridors() []Corridor {
@@ -150,6 +176,7 @@ func (s *Scheduler) Run(ctx context.Context) error {
 
 	s.log().Info("scheduler starting",
 		"interval", s.interval().String(),
+		"jitter", s.Jitter.String(),
 		"corridors", len(s.corridors()))
 
 	if err := s.RunOnce(ctx); err != nil && ctx.Err() == nil {
@@ -160,15 +187,16 @@ func (s *Scheduler) Run(ctx context.Context) error {
 		s.log().Error("initial sweep failed", "error", err)
 	}
 
-	ticker := time.NewTicker(s.interval())
-	defer ticker.Stop()
+	rng := s.randomSource()
 
 	for {
+		timer := time.NewTimer(s.nextInterval(rng))
 		select {
 		case <-ctx.Done():
+			timer.Stop()
 			s.log().Info("scheduler stopping", "reason", ctx.Err())
 			return ctx.Err()
-		case <-ticker.C:
+		case <-timer.C:
 			if err := s.RunOnce(ctx); err != nil && ctx.Err() == nil {
 				s.log().Error("sweep failed", "error", err)
 			}
@@ -314,8 +342,50 @@ func (s *Scheduler) measure(ctx context.Context, c Corridor) error {
 	if err := s.store().Append(ctx, record); err != nil {
 		s.log().Error("recording measurement failed",
 			"corridor", c.Key(), "error", err)
+		return nil
 	}
+
+	// The run is stored, so the corridor's structure can now be compared
+	// with the run before it. A corridor moving from DIRECT to NO-MARKET
+	// is the single most important event this monitor can observe, and
+	// until now nothing called the detector that finds it: the change was
+	// visible only by diffing stored records by hand.
+	s.reportTransition(ctx, c.Key())
 	return nil
+}
+
+// reportTransition logs the corridor's most recent structural change, when
+// the store records one.
+//
+// The comparison is the two most recent stored runs, so a corridor whose
+// structure has not moved says nothing at all. The absence of a transition
+// is the normal case, not a missing observation, and logging it would bury
+// the events that matter.
+//
+// UNKNOWN is excluded by the detector itself, so a transient upstream
+// failure cannot raise a structural alarm here: the same reasoning that
+// keeps a monitor that cries wolf from being muted.
+func (s *Scheduler) reportTransition(ctx context.Context, corridor string) {
+	transition, err := runstore.DetectLatestTransition(ctx, s.store(), corridor)
+	if err != nil {
+		// A failed read is not a failed measurement. The record is
+		// stored, and the next sweep will compare against it.
+		s.log().Error("integrity transition check failed",
+			"corridor", corridor, "error", err)
+		return
+	}
+	if transition == nil {
+		return
+	}
+	s.log().Warn("corridor integrity transition",
+		"corridor", corridor,
+		"previous_integrity", transition.PreviousIntegrity,
+		"current_integrity", transition.CurrentIntegrity,
+		"transition_type", transition.TransitionType.String(),
+		"previous_run_at", transition.PreviousRunAt.UTC().Format(time.RFC3339),
+		"current_run_at", transition.CurrentRunAt.UTC().Format(time.RFC3339),
+		"previous_depends_on", transition.PreviousDependsOn,
+		"current_depends_on", transition.CurrentDependsOn)
 }
 
 func formatTime(t time.Time) string {

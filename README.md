@@ -30,6 +30,13 @@ embedded in the binary at build time. Every response carries `live: false` and a
 `stale` block with the reading's age. Ask for a live measurement explicitly with
 `?live=1` — that prices a full ladder against Horizon and takes tens of seconds.
 
+**A recorded response is revalidatable.** Because a stored record is immutable
+until the next one lands, a `live: false` response carries the record's seal
+hash as an `ETag`; a polling client that sends it back as `If-None-Match` gets a
+`304` with no body instead of the document again. A live response carries no
+`ETag` — there is nothing about a fresh measurement that can be reused. See
+[the API reference](docs/api.md#conditional-requests-on-history-served-responses).
+
 **Freshness depends on the measure workflow, not on the deployment.** New
 records are written by `.github/workflows/measure.yml` and committed to `data/`.
 The committed history is a bounded window, not the whole chain: each corridor
@@ -572,6 +579,14 @@ as zero. Below the documented minimum sample size (30 observations —
 [docs/glossary.md](docs/glossary.md#metric-determination) has the general
 rule), `determined` is `false` and `reason` says why; `mean_pct`, `stddev_pct`
 and the trend fields are then absent rather than a precise-looking number.
+
+The response also names the corridor's structural changes: `integrity_transitions`
+lists every determined change between consecutive runs in the window, and
+`latest_transition` is the most recent of them with both states named — so
+"this corridor moved from DIRECT to NO-MARKET" is readable without diffing two
+records by hand. A pair involving `UNKNOWN` is never reported: it cannot
+establish that structure changed. The scheduler writes the same comparison to
+its log after every sweep.
 
 ### UI
 

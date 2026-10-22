@@ -46,6 +46,7 @@ func (r *Runner) Default() []Check {
 		SEP12ServerPublished{},
 		SEP31Info{HTTPClient: r.client()},
 		SEP10EndpointResponds{HTTPClient: r.client()},
+		SEP6InfoListsAsset{HTTPClient: r.client()},
 		SEP24InfoListsAsset{HTTPClient: r.client()},
 		SEP38QuoteServerPublished{},
 		IssuerAuthFlags{HorizonURL: r.HorizonURL, HTTPClient: r.client()},

@@ -258,6 +258,7 @@ the set has grown, and `checks.Runner.Default()` returns:
 | `toml.anchor-asset-iso4217` | asset | free | notice |
 | `sep12.server-published` | anchor | free | info |
 | `sep10.endpoint-responds` | anchor | one-request | warning |
+| `sep6.info-lists-asset` | asset | one-request | notice |
 | `sep24.info-lists-asset` | asset | one-request | notice |
 | `sep31.info` | asset | one-request | warning |
 | `sep38.quote-server-published` | anchor | free | notice |
