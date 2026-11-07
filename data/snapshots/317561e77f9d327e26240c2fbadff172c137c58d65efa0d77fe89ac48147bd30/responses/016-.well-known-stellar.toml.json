@@ -1,0 +1,226 @@
+# Montelibero Stellar Anchor <https://montelibero.org>
+# https://github.com/stellar/stellar-protocol/tree/master/ecosystem
+NETWORK_PASSPHRASE="Public Global Stellar Network ; September 2015"
+VERSION="2.5.0"
+
+ACCOUNTS=["GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"]
+
+[[PRINCIPALS]]
+name="Igor Tolstov"
+email="iTolstov@montelibero.org"
+keybase="iTolstov"
+telegram="iTolstov"
+
+[[PRINCIPALS]]
+name="Utrosin Valeriy"
+email="poutru@montelibero.org"
+keybase="poutru"
+telegram="poutru"
+
+[DOCUMENTATION]
+ORG_NAME="Montelibero"
+ORG_URL="https://mtlf.me"
+ORG_LOGO="https://mtlf.me/images/mtl-small-logo.png"
+ORG_DESCRIPTION="Montelibero is a community and an ecosystem of projects in the field of individual freedom. The MTL and MTLRECT participation tokens are issued by the MTL Foundation, the community's crypto fund governed by multisig."
+ORG_GITHUB="montelibero-org"
+ORG_OFFICIAL_EMAIL="montelibero.fspe@gmail.com"
+ORG_SUPPORT_EMAIL="montelibero.fspe@gmail.com"
+
+[[CURRENCIES]]
+code="MTL"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=7
+anchor_asset_type="other"
+is_unlimited=true
+name="Montelibero"
+desc="Montelibero (MTL) is a participation token in the MTL Foundation, a crypto fund that owns Bitcoin, Ethereum, and tokenized income-generating assets, as well as real estate and other assets. MTL is traded on the Stellar DEX with two-way trading and in the Soroban AMM pool."
+conditions="Income from token ownership is determined and distributed by the Foundation's governing board (multisig). Foundation reports are published on stat.mtlf.me."
+image="https://mtlf.me/images/mtl-small-logo.png"
+
+[[CURRENCIES]]
+code="MTLRECT"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=7
+is_unlimited=true
+name="Montelibero Voting"
+desc="Voting participation token in the MTL Foundation. One MTLRECT carries the same share in the Foundation as one MTL, plus voting rights under the current offer. MTL converts to MTLRECT 1:1. MTLRECT trades on the Stellar DEX as a separate market."
+conditions="Income from token ownership is determined and distributed by the Foundation's governing board (multisig) on equal terms with MTL. Conversion back to MTL is not guaranteed and requires a decision of more than 2/3 of the signers. Foundation reports are published on stat.mtlf.me."
+image="https://mtlf.me/images/mtlrect-small-logo.png"
+
+[[CURRENCIES]]
+code="EURMTL"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=2
+anchor_asset_type="fiat"
+anchor_asset="EUR"
+is_asset_anchored=true
+is_unlimited=true
+name="EURMTL"
+desc="EURMTL stablecoin with 100% reservation, which MTL Foundation undertakes to exchange to bearers in Montenegro at the rate of 1 to 1 for euros."
+conditions="EURMTL secured by 100% reserve assets in euros."
+redemption_instructions="For the owner of these assets, the bearer EURMTL has the right, in a 1 to 1 ratio, to replace his tokens with fiat euros, by sending him tokens."
+image="https://mtlf.me/images/eurmtl-small-logo.png"
+
+[[CURRENCIES]]
+code="EURDEBT"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="private"
+display_decimals=2
+anchor_asset_type="fiat"
+anchor_asset="EUR"
+is_asset_anchored=false
+is_unlimited=true
+name="EURDEBT"
+desc="The asset fixes the obligations of the guarantor for the maximum amount of exchange for fiat euros available to the bearer EURMTL."
+conditions="The asset is provided free of charge by the issuer - MTL - to the guarantors of the fund, who undertake to exchange EURMTL in this amount at the rate of 1: 1 to their first bearer for fiat funds. The asset guarantees that its owner has the appropriate amount to exchange EURMTL for fiat funds. When exchanging EURMTL for fiat, both tokens are redeemed by sending them back to the issuer - the MTL fund."
+image="https://mtlf.me/images/eurdebt-small-logo.png"
+
+[[CURRENCIES]]
+code="BTCMTL"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=7
+anchor_asset_type="crypto"
+anchor_asset="BTC"
+is_asset_anchored=true
+is_unlimited=true
+name="BTCMTL"
+desc="BTCMTL is a stablecoin for bitcoins stored with 100% reserve under the guarantees of the MTL-fund. It guarantees the applicant, upon request, the exchange of this token for real bitcoins."
+conditions="BTCMTL secured by 100% reserve assets in bitcoin."
+redemption_instructions="For the owner of these assets, the bearer BTCMTL has the right, in a 1 to 1 ratio, to replace his tokens with bitcoin, by sending him tokens."
+image="https://mtlf.me/images/btcmtl-small-logo.png"
+
+[[CURRENCIES]]
+code="BTCDEBT"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="private"
+display_decimals=7
+anchor_asset_type="crypto"
+anchor_asset="BTC"
+is_asset_anchored=false
+is_unlimited=true
+name="BTCDEBT"
+desc="BTCDEBT the amount of guarantees for the exchange of stablecoins bitcoins BTCMTL for real bitcoins from the side of the specific account on which they are stored."
+image="https://mtlf.me/images/btcdebt-small-logo.png"
+
+[[CURRENCIES]]
+code="TONMTL"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=2
+anchor_asset_type="crypto"
+anchor_asset="TON"
+is_asset_anchored=true
+is_unlimited=true
+name="TON Montelibero"
+desc="TONMTL is a stablecoin to TON, fixing the obligation of its issuer to exchange any number of tokens one-to-one for TON within 24 hours of receiving an application from the token holder."
+conditions="TONMTL secured by 100% reserve assets in TON"
+image="https://mtlf.me/images/tonmtl.png"
+
+[[CURRENCIES]]
+code="TONDEBT"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="private"
+display_decimals=2
+is_unlimited=true
+name="TON Montelibero debt"
+desc="TONDEBT is a token that fixes the obligations of its holder to securely store the TONMTL stablecoin reservation and exchange it for the original TON"
+image="https://mtlf.me/images/tondebt.png"
+
+[[CURRENCIES]]
+code="MTLand"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=7
+is_unlimited=true
+name="Montelibero land"
+desc="One MTLand token is equal to one EURMTL and fixes the share of its holders in the capital that accumulates for the collective purchase of the land, and the order in which the land is divided among the participants."
+conditions="The emission of the MTLand token occurs simultaneously with the receipt of funds from its purchaser; issuance of unsecured tokens is not allowed. Full offer see https://montelibero.org/mtland_token_offer"
+image="https://mtlf.me/images/mtland-small-logo.png"
+
+[[CURRENCIES]]
+code="AUMTL"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=7
+anchor_asset_type="commodity"
+anchor_asset="AU"
+is_asset_anchored=true
+is_unlimited=true
+name="AUMTL"
+desc="1 token is a tokenized gram of certified 999 fine gold that can be exchanged for gold bars of the size available from guarantors holding the AUDEBT token."
+conditions="Token holders have the right to present it for exchange in suitable amounts to guarantors (owners of AUDEBT) who are required to exchange for certified 999 gold bars if the required volume corresponds to the bars available to them, and the amount of AUDEBT on their accounts exceeds the amount available from the guarantors AUMTL tokens for the volume of AUMTL tokens presented for exchange. To contact the nearest guarantor, you can contact the MTL-Fund."
+redemption_instructions="You can sell a token on the secondary market through an order or, if you have the minimum required number of tokens (equal to a gram of certified 999 gold bars) to exchange them for bars, exchange them for the tokenized product itself with the guarantors. - holders of the required debt in AUDEBT"
+image="https://mtlf.me/images/aumtl-small-logo.png"
+
+[[CURRENCIES]]
+code="AUDEBT"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="private"
+display_decimals=7
+anchor_asset_type="commodity"
+anchor_asset="AU"
+is_asset_anchored=false
+is_unlimited=true
+name="AUDEBT"
+desc="a token of the guarantors of a decentralized system of tokenized gold trading, confirming that its owner has a corresponding amount of certified 999 gold bullion for exchange for an AUMTL token, provided that 1 token is equal to 1 gram of gold."
+conditions="The guarantor is obliged to exchange the corresponding number of tokens for gold bars to the first bearer of the AUMTL token, provided that the balance of the guarantor in the AUDEBT token is equal to or exceeds the requested amount of AUMTL tokens on the guarantor's balance, and this amount itself corresponds to the weight of the gold bars of certified 999 fine gold available from the guarantor. If a specific guarantor has the ingots necessary for your weight requests, please clarify in advance and pay attention to the presence of a proportional excess of AUDEBT over AUMTL on the public stellar account in case you want to use not the right, but his obligation to exchange."
+image="https://mtlf.me/images/audebt-small-logo.png"
+
+[[CURRENCIES]]
+code="SATSMTL"
+issuer="GACKTN5DAZGWXRWB2WLM6OPBDHAMT6SJNGLJZPQMEZBUR4JUGBX2UK7V"
+status="live"
+display_decimals=7
+is_unlimited=true
+name="Satoshi MTL"
+desc="stablecoin to satoshi with guaranteed exchange to BTCMTL"
+image="https://mtlf.me/images/SATSMTL-small-logo.png"
+
+[[CURRENCIES]]
+code="USDM"
+name= "USD Montelibero"
+issuer="GDHDC4GBNPMENZAOBB4NCQ25TGZPDRK6ZGWUGSI22TVFATOLRPSUUSDM"
+status="live"
+display_decimals=7
+anchor_asset_type="crypto"
+anchor_asset="USD"
+is_asset_anchored=true
+is_unlimited=true
+desc="USDM is a stablecoin pegged to the US dollar, fixing the obligation of its issuer within 24 hours from the receipt of an application from the holder of tokens to exchange any amount of them one-for-one for USDC tokens on the Stellar blockchain"
+image="https://mtlf.me/images/USDM100.png"
+
+[[CURRENCIES]]
+code="MFApart"
+issuer="GD2SNF4QHUJD6VRAXWDA4CDUYENYB23YDFQ74DVC4P5SYR54AAVCUMFA"
+status="live"
+display_decimals=2
+is_unlimited=true
+name="MTL apartments MF"
+desc="The token records the share of the contribution to the rental residential real estate fund in MTL City. Read more here: https://montelibero.org/2023/11/15/regulations_on_mutual_funds_mtl/"
+conditions="The share can, by agreement with the issuer, be converted and withdrawn from the pool of assets in kind, privatizing them, or receiving rental income"
+image="https://mtlf.me/images/MFApart.png"
+
+[[CURRENCIES]]
+code="MFBond"
+issuer="GCKCV7T56CAPFUYMCQUYSEUMZRC7GA7CAQ2BOL3RPS4NQXDTRCSULMFB"
+status="live"
+display_decimals=2
+is_unlimited=true
+name="MTL bonds MF"
+desc="Mutual investment fund secured by MTL fund bonds with monthly dividends"
+image="https://mtlf.me/images/MFBond.png"
+
+[[CURRENCIES]]
+code="LABR"
+issuer="GA7I6SGUHQ26ARNCD376WXV5WSE7VJRX6OEFNFCEGRLFGZWQIV73LABR"
+status="live"
+display_decimals=2
+is_unlimited=true
+name="Montelibero labor"
+desc="Mutual investment fund stimulating the development of the market for time-tokens of Montelibero project participants"
+image="https://mtlf.me/images/LABR200.png"
+
